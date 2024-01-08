@@ -275,12 +275,12 @@ else
         verse=$1
     fi
     
-    if [[ -z $url || ! $verse =~ $range ]];then
-        [[ $# -ne 0 ]] && awk '{print $1}' ".$bk.log" 2>&1|nl
+    if [[ ! $(cat ".$bk.log"|nl|awk '{print $1}'|grep "^$verse$") ]];then
+        [[ $# -ne 0 ]] && awk '{print $1}' ".$bk.log"|nl
         echo -en "please select a valid choice from the above.. "
         read verse
 
-        if [[ ! -z $url ]];then
+        if [[ $(cat ".$bk.log"|nl|awk '{print $1}'|grep "^$verse$") ]];then
             fetch_verse $bk
         elif [[ -z $verse ]];then
             echo "you must enter an input!"
@@ -291,7 +291,7 @@ else
         fi
 
     fi
-    if [[ ! -z $verse && $verse =~ $range ]];then
+    if [[ $(cat ".$bk.log"|nl|awk '{print $1}'|grep "^$verse$") ]];then
         url_selector $verse
     else echo not in range! ;error;fi
 fi
