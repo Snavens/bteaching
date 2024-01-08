@@ -1,0 +1,340 @@
+#!/usr/bin/env bash
+#
+#   Copyright (c) 2023 falkensnavens
+#   All rights reserved.
+#   falkensnavens@gmail.com
+#
+# print usage and exit
+if [ $# -eq 0 ];then
+    echo "Usage: $(basename $0) {arg}
+    args:
+        --help | -h
+            --print help
+        | -reset | <book>
+            --resets a book, incase it exhibits errors 
+        -r  --selects random book"
+    exit 0
+fi
+base_dir=~/.cache/$(basename $0);tmp_file=$base_dir/.$(basename $0).tmp
+hist_file=$base_dir/.$(basename $0).hist;range='[0-9]+$'
+# error function
+error(){
+    echo "Follow this format <book> <video|audio> <line.chapter> "
+    exit $?
+}
+case $1 in
+    # show help
+    --help | -h )
+        echo -e "This piece of code aims to take you through the whole bible.
+Enjoy a well elaborated teaching by pastor Paul for more visit \e[092mhttps://www.ccontario.com\e[0m\n
+    Ok, so this is how it works:
+argument is given as the book that you need to study and you will be prompted with the verse.
+You have to give your initial input in small letters and don't include spaces
+example: \e[095mbteaching titus\e[97m
+    Incase you happen to encounter any error or you want to update a book try passing reset as argument
+    example: \e[095mbteaching reset titus\e[97m
+\nI hope that was all you needed to know about this code. Enjoy !"
+        exit $?
+    ;;
+    # clear local cache
+    *reset)
+        shift
+        if [[ -d $base_dir && $# -ne 0 ]];then
+            cd $base_dir/ && rm .*$1* *$1* >/dev/null 2>&1
+        else
+            echo "nothing to reset here, quitting.."
+            exit $?
+        fi 
+    ;;
+    -p)
+        if [ -f ${hist_file} ];then
+            bash ${hist_file}
+        else
+            echo "no history yet!"
+        fi
+        exit $?
+    ;;
+    *)
+        # check if range requirement was met
+        if [[ $# -gt 3&&! $2 =~ $range&&$2 != -r&&$3 != video&&$3 != audio&&$1 != -r&&$1 != -R ]];then
+            echo "all you have to do is enter a book you wish to study"
+            echo -e "here is an example:\n  bteaching genesis"
+            exit $?
+        elif [[ $1 == -r || $1 == -R ]];then
+            case $2 in
+                video) type=video ;;audio) type=audio ;;
+                *) type=`echo -e 'audio\nvideo'|shuf|head -n1` ;;
+            esac
+            if [[ $1 == -R ]];then
+                case $3 in
+                b01) $0 genesis -r $2 ;;b02) $0 exodus -r $2 ;;b03) $0 leviticus -r $2 ;;b04) $0 numbers -r $2 ;;b05) $0 deuteronomy -r $2 ;;
+                b06) $0 joshua -r $2 ;;b07) $0 judges -r $2 ;;b08) $0 ruth -r $2 ;;b09) $0 "1samuel" -r $2 ;;b10) $0 "2samuel" -r $2 ;;
+                b11) $0 "1kings" -r $2 ;;b12) $0 "2kings" -r $2 ;;b13) $0 "1chronicles" -r $2 ;;b14) $0 "2chronicles" -r $2 ;;b15) $0 ezra -r $2 ;;
+                b16) $0 nehemiah -r $2 ;;b17) $0 esther -r $2 ;;b18) $0 job -r $2 ;;b19) $0 psalms -r $2 ;;b20) $0 proverbs -r $2 ;;
+                b21) $0 ecclesiastes -r $2 ;;b22) $0 songofsolomon  -r $2 ;;b23) $0 isaiah -r $2 ;;b24) $0 jeremiah -r $2 ;;b25) $0 lamentations -r $2 ;;
+                b26) $0 ezekiel -r $2 ;;b27) $0 daniel -r $2 ;;b28) $0 hosea -r $2 ;;b29) $0 joel -r $2 ;;b30) $0 amos -r $2 ;;b31) $0 obadiah -r $2 ;;
+                b32) $0 jonah -r $2 ;;b33) $0 micah -r $2 ;;b34) $0 nahum -r $2 ;;b35) $0 habakkuk -r $2 ;;b36) $0 zephaniah -r $2 ;;b37) $0 haggai -r $2 ;;
+                b38) $0 zechariah -r $2 ;;b39) $0 malachi -r $2 ;;b40) $0 matthew -r $2 ;;b41) $0 mark -r $2 ;;b42) $0 luke -r $2 ;;b43) $0 john -r $2 ;;
+                b44) $0 acts -r $2 ;;b45) $0 romans -r $2 ;;b46) $0 "1corinthians" -r $2 ;;b47) $0 "2corinthians" -r $2 ;;b48) $0 galatians -r $2 ;;
+                b49) $0 ephesians -r $2 ;;b50) $0 philippians -r $2 ;;b51) $0 colossians -r $2 ;;b52) $0 "1thessalonians" -r $2 ;;b53) $0 "2thessalonians" -r $2 ;;
+                b54) $0 "1timothy" -r $2 ;;b55) $0 "2timothy" -r $2 ;;b56) $0 titus -r $2 ;;b57) $0 philemon -r $2 ;;b58) $0 hebrews -r $2 ;;b59) $0 james -r $2 ;;
+                b60) $0 "1peter" -r $2 ;;b61) $0 "2peter" -r $2 ;;b62) $0 "1john" -r $2 ;;b63) $0 "2john" -r $2 ;;b64) $0 "3john" -r $2 ;;b65) $0 jude -r $2 ;;
+                b66) $0 revelation -r $2 ;;
+                *) error ;;
+                esac
+                exit $?
+            else
+                until [[ "$book" -gt 0 && "$book" -lt 67 ]];do 
+                    book=`cat /dev/urandom|tr -cd '1-6'|head -c2|awk '{print $1}'` 
+                done
+                case $type in
+                    video) $0 -R video $"b$book";;
+                    audio) $0 -R audio $"b$book";;
+                esac
+            fi
+        fi
+    ;;
+esac
+
+# create cache directories if absent
+if [[ ! -d $base_dir ]];then
+    mkdir -p $base_dir
+fi && cd $base_dir
+# clear if there is left mess
+if [[ -f $base_dir/$1 ]];then
+    if [[ ! $(grep -oP '(?<=href=").*?(?=.mp3)' $base_dir/$1) ]];then
+        rm $base_dir/$1 >/dev/null 2>&1
+    fi
+else
+    rm .$1.log >/dev/null 2>&1
+fi
+# check if we're running on cygwin
+case "$OSTYPE" in
+    *ygwin*) cygwin=true ;;
+    *) cygwin=false ;;
+esac
+#check requirements
+check_command(){
+    case $cygwin in
+        true)
+            if [[ ! $(command -v $@) ]];then
+                echo -e "\e[091mcommand $@ not found!\e[092m\ntry installing it your distribution way..\e[0m"
+                echo "then try executing script again"
+                exit $?
+            fi
+        ;;
+        false)
+            echo "this script runs on cygwin, please switch to linux to try it.."
+            exit $?
+        ;;
+    esac
+}
+check_command wget cyt-dl ffmpeg
+# fetch book links if not present in local storage
+if [[ ! -f $base_dir/$1 ]];then
+    
+    case $1 in
+        genesis|exodus|leviticus|numbers|deuteronomy|joshua|judges|ruth|1samuel|2samuel|1kings|\
+        2kings|1chronicles|2chronicles|ezra|nehemiah|esther|job|psalms|proverbs|ecclesiastes|songofsolomon|\
+        isaiah|jeremiah|lamentations|ezekiel|daniel|hosea|joel|amos|obadiah|jonah|micah|nahum|habakkuk|zephaniah|haggai|\
+        zechariah|malachi|matthew|mark|luke|john|acts|romans|1corinthians|2corinthians|galatians|ephesians|philippians|\
+        colossians|1thessalonians|2thessalonians|1timothy|2timothy|titus|philemon|hebrews|james|1peter|2peter|\
+        1john|2john|3john|jude|revelation) 
+            echo "fetching the book requested.. please wait"
+            wget --spider https://www.ccontario.com/"$1" >$tmp_file 2>&1
+
+            if [[ `grep -E "404 Not Found|failure in name resolution|ERROR 404" $tmp_file`  ]];then
+                echo "it seems you dont have internet.."
+                rm $tmp_file >/dev/null 2>&1
+                exit $?
+            fi
+            wget -c -O "$1" https://www.ccontario.com/"$1"
+        ;;
+        *)
+            echo "book $1 not found"
+            echo "please check to see that you entered the correct bible book in small caps, for example 2corinthians"
+            exit $?
+        ;;
+    esac
+        
+fi
+
+bk=$1;shift
+if [[ $# -gt 2 ]];then
+    error
+elif [[ $# -eq 2 ]];then
+    [[ $2 != audio && $2 != video ]] && error
+    file_format=$2
+fi
+
+ref(){
+    grep '.mp3' "$bk"
+}
+# check if book was downloaded or not
+if [[ ! -f "$bk" ]];then
+    echo "the book you are trying to study to was not downloaded, try running the code again.."
+    exit $?
+fi
+# sort verses
+if [[ ! -f ".$bk.log" ]];then
+    echo -e "\e[097msorting verses ...\e[0m"
+    selection(){
+        link=`ref|grep -o 'http[a-z://a-z.]*calvarychapelontario.com/teaching/[/A-Za-z0-9a-z0-9()-.]*'|grep -vE 'notes|\.zip'`
+        cat <<EOF
+$link
+EOF
+    }
+    chapters(){
+        while IFS= read -r li;do
+            echo `grep -oP '(?<=teaching/'$bk'/).*(?=\.mp3)'<<<"$li"`  \
+            $li
+        done < <(selection)
+    }
+    chapters >".$bk.log"
+    # list verses
+    if [[ $(cat ".$bk.log" 2>&1|wc -l) != 1 && $# -eq 0 ]];then
+        awk '{print $1}' ".$bk.log" 2>&1|nl
+    fi
+elif [[ ! -f ".$bk.log" || ! $(cat ".$bk.log" 2>&1) ]];then
+    echo "an error occured, try running the code again.."
+    rm ".$bk.log" >/dev/null 2>&1
+    exit $?
+elif [[ -f ".$bk.log" ]];then
+    if [[ $(cat ".$bk.log" 2>&1|wc -l) != 1 && $# -eq 0 ]];then
+        awk '{print $1}' ".$bk.log" 2>&1|nl
+    fi
+fi
+# verse selection
+fetch_verse() {
+
+    # check internet
+    chck_internet(){
+        wget --spider $@ >$tmp_file 2>&1
+        if [[ `grep -E "failure in name resolution|unable to resolve host" $tmp_file` ]];then
+            echo "it seems you dont have internet to stream.."
+            rm $tmp_file >/dev/null 2>&1
+            exit $?
+        fi
+    }
+    # play fetched studies
+    [[ $verse == null && -z $announce ]] && echo -e "\e[094mthis book contains only one chapter, or atleast that is the only documented chapter..\n \
+    the other reason you are getting this is maybe several chapters have been compiled to one\e[0m"
+    case $audio in 
+        no) chck_internet $vid_url
+            echo "cyt-dl -sc $vid_url"|tee ${hist_file} ;;
+        *) chck_internet $goto_link
+            echo "cyt-dl -sd $goto_link"|tee ${hist_file} ;;
+    esac
+    bash ${hist_file}
+    
+}
+url_selector(){
+    if [[ $@ =~ $range ]];then
+        goto="$(awk '{print $1}' ".$bk.log" 2>&1|nl|awk 'NR=='"$@"'' 2>&1|awk '{print $2}')"
+        goto_link="$(awk '{print $2}' ".$bk.log" 2>&1|nl|awk 'NR=='"$@"'' 2>&1|awk '{print $2}')"
+    elif [[ $@ == -r ]];then
+        nr=`awk '{print $1}' ".$bk.log" 2>&1|nl|awk '{print $1}'|shuf|head -n1`
+        goto="$(awk '{print $1}' ".$bk.log" 2>&1|nl|awk 'NR=='"$nr"'' 2>&1|awk '{print $2}')"
+        goto_link="$(awk '{print $2}' ".$bk.log" 2>&1|nl|awk 'NR=='"$nr"'' 2>&1|awk '{print $2}')"
+    else
+        error
+    fi
+    [[ -z $goto ]] && return
+    if [[ -n $file_format ]];then
+        if [[ $file_format == video ]];then
+            audio=no
+        fi
+    else
+        echo -n "video/audio? "
+        read opt
+        if [[ $opt == video ]];then
+            audio=no
+        elif [[ $opt != audio && $opt != video ]];then
+            echo -n "please give you choice from the above options.."
+            read opt
+            if [[ $opt != audio && $opt != video ]];then
+                echo "sorry but your request was invalid.. quitting"
+                exit $?
+            fi
+            audio=no
+        fi
+    fi
+    
+    case $audio in
+        no)
+        if [[ $(grep youtu<<<$goto_link) ]];then
+            vid_url=$goto_link
+        else
+            vid_url=`grep -ioP '(?<='$bk').*(?='$(cat ".$bk.log" 2>&1|grep ^$goto 2>&1|awk '{print $2}' \
+            |sed 's#)#\\\)#g'|sed 's#(#\\\(#g')')' $bk|while read p;do echo $p|tr ' ' '\n';done|tac|grep -m1 youtu \
+            |grep -v calvarychapelontario|grep -oP '(?<=href\=").*(?=$)'|cut -f1 -d'&'` || {
+                vid_url=`grep -ioP '(?<=href\=").*(?='$url')' $bk|while read p;do echo $p|tr ' ' '\n';done|tac|grep -m1 'yout' \
+                |grep -v calvarychapelontario|grep -oP '(?<=href\=").*?(?=$)'|cut -f1 -d'&'|head -n1`
+            }
+            
+            if [[ -z $vid_url || $(grep '"' <<< $vid_url) ]];then
+                vid_url=`grep -ioP '(?<='$bk').*(?='$(cat ".$bk.log" 2>&1|grep ^$goto 2>&1|awk '{print $2}' \
+                |sed 's#)#\\\)#g'|sed 's#(#\\\(#g')')' $bk|while read p;do echo $p|tr ' ' '\n';done|tac|grep -m1 youtu \
+                |grep -v calvarychapelontario|grep -oP '(?<=href\=").*(?=$)'|cut -f1 -d'"'` || {
+                        vid_url=`grep -ioP '(?<='$bk').*(?='$(cat ".$bk.log" 2>&1|grep ^$goto 2>&1|awk '{print $2}' \
+                        |sed 's#)#\\\)#g'|sed 's#(#\\\(#g')')' $bk|while read p;do echo $p|tr ' ' '\n';done|tac|grep -m1 youtu \
+                        |grep -v calvarychapelontario|grep -oP '(?<=href\=").*?(?=$)'|cut -f1 -d'"'`
+                    }
+            fi
+        fi
+        if [ -z $vid_url ];then
+            vid_url=`cat "$bk"|grep ''$goto_link''|while read -r p;do echo $p|\
+            tr ' ' '\n';done|grep ''$goto_link'' -A100|grep youtu|grep -v "/calvarychapelontari"|grep -oP '(?=http).*(?=")'` || {
+                vid_url=`cat "$bk"|grep ''$goto_link''|while read -r p;do echo $p|\
+                    tr ' ' '\n';done|grep ''$goto_link'' -B100|grep youtu|grep -v "/calvarychapelontari"|tac|grep -oP '(?=http).*(?=")'`   
+            }
+        fi
+
+        if [[ -z $vid_url ]];then
+            echo "Could not find the link to the video, sorry"
+            exit $?
+        fi
+        ;;
+    esac 
+    
+}
+# inspect verses
+if [[ $(cat ".$bk.log" 2>&1|wc -l) == 1 || $1 == -r ]];then
+    verse=null
+    if [[ $1 == -r ]];then
+        verse=-r ;else verse=1
+    fi
+elif [[ $1 =~ $range ]];then
+    verse=$1
+else
+    echo -en "please select the chapter/verses you would like to listen to : "
+    read verse
+fi
+
+if [[ ! -z $verse ]];then
+    url_selector $verse
+fi
+
+if [[ ! -z $goto && $(grep ^$goto ".$bk.log") ]];then
+    fetch_verse $bk
+else
+    if [[ $# -ne 0 ]];then
+        awk '{print $1}' ".$bk.log" 2>&1|nl
+    fi
+    echo -en "please select a valid choice from the above.. "
+    read verse
+    if [[ ! -z $verse && $verse =~ $range ]];then
+        url_selector $verse
+    fi
+
+    if [[ ! -z $goto && $(grep ^$goto ".$bk.log") ]];then
+        fetch_verse $bk
+    elif [[ -z $verse ]];then
+        echo "you must enter an input!"
+        exit $?
+    else
+        echo "sorry but I couldn't find such a chapter or verse you gave me.. quitting"
+        exit $?
+    fi
+
+fi

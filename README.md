@@ -10,8 +10,8 @@ Depending on the device you are using, grab the necessary files in the root fold
 
 For the script to work you need a couple of things installed. 
 In a different repository, \`[cyt-dl](https://github.com/Snavens/cyt-dl)\` set it up as this is a requirement for this to work.
-All instructions setting up the script `cyt-dl` mentioned in its repo
-Do this step only if you intend to install on Linux
+All instructions setting up the script `cyt-dl` mentioned in its repo.
+Do this step only if you intend to install on Linux / Cygwin
 
 ### GNU LINUX 
 Clone this repo and find the folder representing your device, copy file named `bteaching` to path (default local path: `/usr/local/bin`).
@@ -52,8 +52,10 @@ copy script to path folder:
 cp bteaching/Android/bteaching ~/bin
 ```
 
-### WINDOWS
-Adding support soon!
+### CYGWIN
+If you don't have cygwin installed, grab it here :[cygwin.exe](https://cygwin.com/setup-x86_64.exe).
+During installation make sure to include wget package.
+Other steps mentioned in the complementary script repo : [cyt-dl](https://github.com/Snavens/cyt-dl).
 
 ## comments
 Incase you encounter an error just submit an issue, if you can't find any other help online. The main goal is go with that which suites your style, if this doesn't then try going for the easy way: ["thru-the-bible website"](https://www.ccontario.com/thru-the-bible).
