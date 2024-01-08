@@ -11,6 +11,7 @@ Depending on the device you are using, grab the necessary files in the root fold
 For the script to work you need a couple of things installed. 
 In a different repository, \`[cyt-dl](https://github.com/Snavens/cyt-dl)\` set it up as this is a requirement for this to work.
 All instructions setting up the script `cyt-dl` mentioned in its repo
+Do this step only if you intend to install on Linux
 
 ### GNU LINUX 
 Clone this repo and find the folder representing your device, copy file named `bteaching` to path (default local path: `/usr/local/bin`).
@@ -55,6 +56,6 @@ cp bteaching/Android/bteaching ~/bin
 Adding support soon!
 
 ## comments
-I presume that incase you encounter an error just submit an issue if you can't find any other help online. The main goal is go with that which suites your style, if this doesn't then try going for the easy way: ["thru-the-bible website"](https://www.ccontario.com/thru-the-bible).
+Incase you encounter an error just submit an issue, if you can't find any other help online. The main goal is go with that which suites your style, if this doesn't then try going for the easy way: ["thru-the-bible website"](https://www.ccontario.com/thru-the-bible).
 
 You can choose audio or video depending with your liking.
