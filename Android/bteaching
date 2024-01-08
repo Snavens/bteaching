@@ -1,0 +1,297 @@
+#!/data/data/com.termux/files/usr/bin/bash
+#
+#   Copyright (c) 2023 falkensnavens
+#   All rights reserved.
+#   falkensnavens@gmail.com
+#
+# print usage and exit
+if [ $# -eq 0 ];then
+    echo "Usage: $(basename $0) {arg}
+    args:
+        --help | -h
+            --print help
+        | -reset | <book>
+            --resets a book, incase it exhibits errors 
+        -r  --selects random book"
+    exit 0
+fi
+base_dir=~/.cache/$(basename $0);range='[0-9]+$'
+tmp_file=$base_dir/.$(basename $0).tmp;hist_file=$base_dir/.$(basename $0).hist
+# error function
+error(){
+    echo "Follow this format <book> <line.chapter> | -r "
+    exit $?
+}
+case $1 in
+# show help
+    --help | -h )
+    echo -e "
+This piece of code aims to take you through the whole bible.
+    Enjoy a well elaborated teaching by pastor Paul for more visit \e[092mhttps://www.ccontario.com\e[0m\n
+        Ok, so this is how it works:
+    Argument is given as the book that you need to study and you will be prompted with the verse.
+    You have to give your initial input in small letters and don't include spaces
+    example: \e[095mbteaching titus\e[97m
+    Incase you happen to encounter any error or you want to update a book try passing reset as argument
+    example: \e[095mbteaching reset 2timothy\e[97m
+    \nI hope that was all you needed to know about this code. Enjoy !
+        "
+    exit $?
+    ;;
+# clear local cache
+    *reset)
+        shift
+        if [[ -d $base_dir && $# -ne 0 ]];then
+            cd $base_dir/ && rm .*$1* *$1* >/dev/null 2>&1
+        else
+            echo "nothing to reset here, quitting.."
+        fi 
+        exit $?
+    ;;
+    -p)
+	wget --spider `cat ${hist_file}|head -n1` >${tmp_file} 2>&1
+	if [[ $(grep -E "404 Not Found|failure in name resolution|unable to resolve host address|ERROR 404" ${tmp_file}) ]];then
+		echo -e "\e[0mit seems you dont have internet.."
+		rm ${tmp_file} >/dev/null 2>&1
+		exit $?
+	fi
+        if test -f ${hist_file};then
+            mpv -v -v `cat ${hist_file}|head -n1`
+        else
+            echo no history yet!
+        fi 
+        exit $?
+    ;;
+    *)
+        # check if range requirement was met
+        if [[ $# -ne 1 && ! $2 =~ $range && $1 != -r && $2 != -r ]];then
+            echo "all you have to do is enter a book you wish to study"
+            echo -e "here is an example:\n  bteaching genesis"
+            exit $?
+        elif [[ $1 == -r ]];then
+            
+            if [[ $# -eq 1 ]];then
+                until [[ "$book" -gt 0 && "$book" -lt 67 ]];do 
+                    book=`cat /dev/urandom|tr -cd '1-9'|head -c24|awk '{print $1}'` && book="${book::2}"
+                    if [[ $book -gt 66 ]];then
+                        book="0${book: -1}"
+                        break
+                    fi
+                done
+                $0 -r $"b$book"
+            else
+                shift
+                case $1 in
+                b01) $0 genesis -r ;;b02) $0 exodus -r ;;b03) $0 leviticus -r ;;b04) $0 numbers -r ;;b05) $0 deuteronomy -r ;;
+                b06) $0 joshua -r ;;b07) $0 judges -r ;;b08) $0 ruth -r ;;b09) $0 "1samuel" -r ;;b10) $0 "2samuel" -r ;;
+                b11) $0 "1kings" -r ;;b12) $0 "2kings" -r ;;b13) $0 "1chronicles" -r ;;b14) $0 "2chronicles" -r ;;b15) $0 ezra -r ;;
+                b16) $0 nehemiah -r ;;b17) $0 esther -r ;;b18) $0 job -r ;;b19) $0 psalms -r ;;b20) $0 proverbs -r ;;
+                b21) $0 ecclesiastes -r ;;b22) $0 songofsolomon  -r ;;b23) $0 isaiah -r ;;b24) $0 jeremiah -r ;;b25) $0 lamentations -r ;;
+                b26) $0 ezekiel -r ;;b27) $0 daniel -r ;;b28) $0 hosea -r ;;b29) $0 joel -r ;;b30) $0 amos -r ;;b31) $0 obadiah -r ;;
+                b32) $0 jonah -r ;;b33) $0 micah -r ;;b34) $0 nahum -r ;;b35) $0 habakkuk -r ;;b36) $0 zephaniah -r ;;b37) $0 haggai -r ;;
+                b38) $0 zechariah -r ;;b39) $0 malachi -r ;;b40) $0 matthew -r ;;b41) $0 mark -r ;;b42) $0 luke -r ;;b43) $0 john -r ;;
+                b44) $0 acts -r ;;b45) $0 romans -r ;;b46) $0 "1corinthians" -r ;;b47) $0 "2corinthians" -r ;;b48) $0 galatians -r ;;
+                b49) $0 ephesians -r ;;b50) $0 philipians -r ;;b51) $0 colossians -r ;;b52) $0 "1thessalonians" -r ;;b53) $0 "2thessalonians" -r ;;
+                b54) $0 "1timothy" -r ;;b55) $0 "2timothy" -r ;;b56) $0 titus -r ;;b57) $0 philemon -r ;;b58) $0 hebrews -r ;;b59) $0 james -r ;;
+                b60) $0 "1peter" -r ;;b61) $0 "2peter" -r ;;b62) $0 "1john" -r ;;b63) $0 "2john" -r ;;b64) $0 "3john" -r ;;b65) $0 jude -r ;;
+                b66) $0 revelation -r ;;*) error ;;
+                esac
+            fi
+            exit $?
+        fi
+    ;;
+esac
+
+# create cache directories if absent
+if [[ ! -d $base_dir ]];then
+    mkdir -p $base_dir
+fi
+cd ${base_dir}/ && rm ${tmp_file} >/dev/null 2>&1
+# clear if there is left mess
+if [[ -f $1 ]];then
+    if [[ ! $(grep -oP '(?<=href=").*?(?=.mp3)' $1) ]];then
+        rm $1 >/dev/null 2>&1
+    fi
+else
+    rm .$1.log >/dev/null 2>&1
+fi
+# Check if running on termux
+case "$PREFIX" in
+    *com.termux*) termux=true ;;
+    *) termux=false ;;
+esac
+#check requirements
+check_command(){
+    case $termux in
+    true)
+    for pkg in $@;do
+        if [[ ! $(command -v $pkg) ]];then
+            echo -e "\e[091mcommand $pkg not found!\e[092m\ntrying install..\e[0m"
+            apt-get update && apt-get install -y $pkg
+        elif [[ ! $(command -v $pkg) ]];then
+            echo "installation of command $pkg failed..try executing script again"
+            exit $?
+        fi
+    done
+    ;;
+    false)
+    echo "this script runs on termux, please download it via link: https://f-droid.org/repo/com.termux_118.apk"
+    exit $?
+    ;;
+    esac
+}
+check_command wget mpv ffmpeg
+bk=$1 && shift
+# fetch book links if not present in local storage
+if [[ ! -f $bk ]];then
+    case $bk in
+        genesis|exodus|leviticus|numbers|deuteronomy|joshua|judges|ruth|1samuel|2samuel|1kings|\
+        2kings|1chronicles|2chronicles|ezra|nehemiah|esther|job|psalms|proverbs|ecclesiastes|songofsolomon|\
+        isaiah|jeremiah|lamentations|ezekiel|daniel|hosea|joel|amos|obadiah|jonah|micah|nahum|habakkuk|zephaniah|haggai|\
+        zechariah|malachi|matthew|mark|luke|john|acts|romans|1corinthians|2corinthians|galatians|ephesians|philippians|\
+        colossians|1thessalonians|2thessalonians|1timothy|2timothy|titus|philemon|hebrews|james|1peter|2peter|\
+        1john|2john|3john|jude|revelation) 
+            # check if internet is ok
+                        echo -en "\e[092mfetching the book requested ($bk), please wait\e[0m"
+            wget -c -O "$bk" https://www.ccontario.com/"$bk" >${tmp_file} 2>&1 & n=1
+            while [[ -z $status ]];do
+                sleep $((n*1/10)) ; echo -ne "\e[032m.\e[0m"
+                if test -f ${tmp_file};then
+		    if [[ `grep -E '404 Not Found|failure in name resolution|ERROR 404|unable to resolve host address \
+                        |Unable to establish SSL connection' ${tmp_file}` || `grep '200 OK' ${tmp_file}` ]];then
+                        if [[ `grep -E '404 Not Found|failure in name resolution|ERROR 404|unable to resolve host address|Unable to establish SSL connection' ${tmp_file}` ]];then
+		        echo -e "\nit seems you dont have internet.."
+		        rm ${tmp_file};status=null
+		        exit $?
+elif [[ `grep '200 OK' ${tmp_file}` ]];then
+                            while [[ ! -f $bk ]];do
+                                sleep $((n*1/10)) ; echo -ne "\e[032m.\e[0m" ; n=$((n+1))
+                            done
+			    [[ $(lsof -t $bk|wc -w) -eq 0 ]] && status=ok
+                        fi
+		    fi
+                fi
+		# die if tries <= 24
+		if [[ $n -lt 25 ]];then
+		    n=$((n+1)) 
+		else
+		    echo "tried too many times, quitting!"
+		    exit $?
+		fi
+            done
+            echo " OK"
+        ;;
+        *)
+            echo "book $bk not found"
+            echo "please check to see that you entered the correct bible book in small caps, for example 2corinthians"
+            exit $?
+        ;;
+    esac
+    # check if book was downloaded or not
+    if [[ ! -f "$bk" ]];then
+        echo -e "the book you are trying to study to was not downloaded, try running the code again.."
+        exit $?
+    fi
+fi
+error_reset(){
+    echo -e "an error occured, try running the code again.."
+    if [ ! $1 == -m ];then
+        rm *$bk*
+	echo
+    else
+        rm ".$bk.log" 
+    fi
+    exit $?
+}
+# sort verses
+if [[ ! -f ".$bk.log" ]];then
+    echo -e "\e[097msorting verses ...\e[0m"
+    links="cat $bk|grep '.mp3'|grep -o 'http[a-z://a-z.]*calvarychapelontario.com/teaching/[/A-Za-z0-9&a-z;0-9()-.]*'|grep -vE 'notes|\.zip'"
+    sort_verses(){
+        while IFS= read -r li;do echo `grep -oP '(?<=teaching/'$bk'/).*(?=\.mp3)'<<<"$li"|sed 's%&amp;%-%g'`  $li;done < <(bash<<<$links)
+    }
+    sort_verses > ".$bk.log"
+    [[ ! $(cat ".$bk.log" 2>&1) ]] && error_reset -m
+fi
+# print verses / check errors
+if [[ -f ".$bk.log" && $(cat ".$bk.log" 2>&1|wc -l) != 1 && $# -lt 1 ]];then
+        awk '{print $1}' ".$bk.log"|nl || error_reset
+elif [[ ! -f ".$bk.log" ]];then 
+    error_reset
+fi
+# verse selection
+fetch_verse() {
+    # save for history
+    save_hist(){
+        echo "$@">>${hist_file}
+        while IFS= read -r line;do
+            [[ ! -z $line ]]  && echo $line
+        done < <(tac ${hist_file}|head -n10) >${tmp_file}
+        mv ${tmp_file} ${hist_file}
+        $0 -p
+    }
+    if [[ $verse == null ]];then
+        case $announce in
+            no)
+            echo -e "\e[094mpicked a random chapter/study\e[0m"
+            ;;
+            *)
+            echo -e "\e[094mthis book contains only one chapter, or atleast that is the only documented chapter..\n \
+the other reason you are getting this is maybe several chapters have been compiled to one\e[0m"
+            ;;
+        esac
+    fi
+    save_hist $url
+}
+url_selector(){
+    url="$(awk '{print $2}' ".$bk.log" 2>&1|awk 'NR=='"$@"'')"
+    if [[ ! -z $url ]];then 
+        fetch_verse $bk
+    else
+        echo "I did not find a url, sorry.."
+    fi
+}
+if [[ $# -gt 1 ]];then
+    error
+fi
+# inspect verses
+if [[ $(cat ".$bk.log"|wc -l) == 1 || $1 == -r ]];then
+    verse=null
+    if [[ $1 == -r ]];then
+        announce=no;url=`cat ".$bk.log" |awk '{print $2}'|shuf|awk 'NR==1'`
+    else
+        url="$(cat ".$bk.log" 2>&1|awk '{print $2}')"
+    fi
+    if [[ ! -z $url ]];then 
+        fetch_verse $bk
+    else
+        echo "I did not find a url, sorry.."
+    fi
+else
+    if [[ $# -eq 0 ]];then
+        echo -en "please select the chapter/verses you would like to listen to : "
+        read verse
+    else 
+        verse=$1
+    fi
+    
+    if [[ -z $url || ! $verse =~ $range ]];then
+        [[ $# -ne 0 ]] && awk '{print $1}' ".$bk.log" 2>&1|nl
+        echo -en "please select a valid choice from the above.. "
+        read verse
+
+        if [[ ! -z $url ]];then
+            fetch_verse $bk
+        elif [[ -z $verse ]];then
+            echo "you must enter an input!"
+            exit $?
+        else
+            echo "sorry but I couldn't find such a chapter or verse you gave me.. quitting"
+            exit $?
+        fi
+
+    fi
+    if [[ ! -z $verse && $verse =~ $range ]];then
+        url_selector $verse
+    else echo not in range! ;error;fi
+fi
